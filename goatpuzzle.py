@@ -1,8 +1,14 @@
+import pprint
 import random
 
 
 class Combination:
-    def __init__(self, goat_1: tuple[int, int], goat_2: tuple[int, int], board_dimensions: tuple[int, int] = (3,5)):
+    def __init__(
+        self,
+        goat_1: tuple[int, int],
+        goat_2: tuple[int, int],
+        board_dimensions: tuple[int, int] = (3, 5),
+    ):
         self.winner = None
         self.goat_1 = goat_1
         self.goat_2 = goat_2
@@ -11,9 +17,73 @@ class Combination:
     def getWinner(self):
         if self.winner is not None:
             return self.winner
-        else: return self.calculateWinner()
+        else:
+            return self.calculateWinner()
 
     def calculateWinner(self) -> str:
+        alice_dists = self.aliceDistancesToGoats()
+        bob_dists = self.bobDistancesToGoats()
+
+        min_alice = min(alice_dists[0], alice_dists[1])
+        min_bob = min(bob_dists[0], bob_dists[1])
+
+        if min_alice < min_bob:
+            return "ALICE"
+        elif min_bob < min_alice:
+            return "BOB"
+        else:
+            return "DRAW"
+
+    def aliceDistancesToGoats(self) -> tuple[int, int]:
+        dist1: int = (self.goat_1[0] * self.board_dimensions[1]) + self.goat_1[1]
+        dist2: int = (self.goat_2[0] * self.board_dimensions[1]) + self.goat_2[1]
+        return (dist1, dist2)
+
+    def bobDistancesToGoats(self) -> tuple[int, int]:
+        dist1: int = self.goat_1[0] + (self.goat_1[1] * self.board_dimensions[0])
+        dist2: int = self.goat_2[0] + (self.goat_2[1] * self.board_dimensions[0])
+        return (dist1, dist2)
+
+
+def doPuzzleWithClasses():
+    board_dimensions = (3, 8)
+    board_area = board_dimensions[0] * board_dimensions[1]
+
+    alice_wins = 0
+    bob_wins = 0
+    draws = 0
+
+    total_combinations = 0
+
+    for outer in range(0, board_area):
+        row1 = outer // board_dimensions[1]
+        col1 = outer % board_dimensions[1]
+        for inner in range(outer + 1, board_area):
+            row2 = inner // board_dimensions[1]
+            col2 = inner % board_dimensions[1]
+
+            winner = Combination(
+                goat_1=(row1, col1),
+                goat_2=(row2, col2),
+                board_dimensions=board_dimensions,
+            ).getWinner()
+            if winner == "ALICE":
+                alice_wins += 1
+            elif winner == "BOB":
+                bob_wins += 1
+            else:
+                alice_wins += 1
+                bob_wins += 1
+                draws += 1
+
+            total_combinations += 1
+
+    print(f"STATISTICS FOR {board_dimensions[0]}x{board_dimensions[1]} BOARD:")
+    print(f"TOTAL COMBINATIONS: {total_combinations}")
+
+    print(f"ALICE WINS: {alice_wins}")
+    print(f"BOB WINS: {bob_wins}")
+    print(f"DRAWS: {draws}")
 
 
 def doPuzzle():
@@ -51,7 +121,7 @@ def simulate(boxes: list[list[str]]) -> tuple[int, int]:
         # Row-major: (0,0) -> (0,1) -> (0,2) ...
         alice_pos = (position // 5, position % 5)
 
-        # Column-major: (1,0) -> (1,0) -> (2,0) -> (0, 1)
+        # Column-major: (0,0) -> (1,0) -> (2,0) -> (0, 1)
         bob_pos = (position % 3, position // 3)
 
         # Alice wins
@@ -65,7 +135,7 @@ def simulate(boxes: list[list[str]]) -> tuple[int, int]:
             winner = True
 
         # If either won, we're done
-        if winner:
+        if winner is True:
             break
 
     return (alice_won, bob_won)
@@ -92,8 +162,6 @@ def generateBoxes() -> list[list[str]]:
     return boxes
 
 
-def generateCombinations() -> list[list[list[str]]]:
-    return
+# doPuzzle()
 
-
-doPuzzle()
+doPuzzleWithClasses()
